@@ -1,3 +1,0 @@
-select * from commodity;
-
-select * from project;
