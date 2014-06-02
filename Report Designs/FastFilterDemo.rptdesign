@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.23" id="1">
+    <property name="createdBy">Eclipse BIRT Designer Version 4.2.3.v20131216-0430 Build &lt;4.2.3.v20131216-0430></property>
+    <property name="units">in</property>
+    <method name="beforeFactory"><![CDATA[importPackage( Packages.org.eclipse.birt.report.model.api );
+elementFactory = reportContext.getDesignHandle().getElementFactory()
+var mytable = reportContext.getDesignHandle().findElement("ProdRevLine");
+]]></method>
+    <property name="iconFile">/templates/blank_report.gif</property>
+    <property name="bidiLayoutOrientation">ltr</property>
+    <property name="imageDPI">96</property>
+    <list-property name="libraries">
+        <structure>
+            <property name="fileName">/ThemesReportItems3.rptlibrary</property>
+            <property name="namespace">ThemesReportItems3</property>
+        </structure>
+        <structure>
+            <property name="fileName">Report Designs/ResourceLoader.rptlibrary</property>
+            <property name="namespace">ResourceLoader</property>
+        </structure>
+    </list-property>
+    <data-sources>
+        <oda-data-source extensionID="org.eclipse.birt.report.data.oda.jdbc" name="Classic Models Data Source" id="112">
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>contentBidiFormatStr</name>
+                    <value>ILYNN</value>
+                </ex-property>
+                <ex-property>
+                    <name>metadataBidiFormatStr</name>
+                    <value>ILYNN</value>
+                </ex-property>
+            </list-property>
+            <property name="odaDriverClass">org.eclipse.birt.report.data.oda.sampledb.Driver</property>
+            <property name="odaURL">jdbc:classicmodels:sampledb</property>
+            <property name="odaUser">ClassicModels</property>
+        </oda-data-source>
+    </data-sources>
+    <data-sets>
+        <oda-data-set extensionID="org.eclipse.birt.report.data.oda.jdbc.JdbcSelectDataSet" name="Prod Data Set" id="8">
+            <list-property name="columnHints">
+                <structure>
+                    <property name="columnName">PRODUCTLINE</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="displayName">PRODUCTLINE</text-property>
+                    <text-property name="heading">PRODUCTLINE</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">TOTALREVENUE</property>
+                    <property name="analysis">measure</property>
+                    <text-property name="displayName">TOTALREVENUE</text-property>
+                    <text-property name="heading">TOTALREVENUE</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">REVENUEYEAR</property>
+                    <property name="analysis">measure</property>
+                    <text-property name="displayName">REVENUEYEAR</text-property>
+                    <text-property name="heading">REVENUEYEAR</text-property>
+                </structure>
+            </list-property>
+            <structure name="cachedMetaData">
+                <list-property name="resultSet">
+                    <structure>
+                        <property name="position">1</property>
+                        <property name="name">PRODUCTLINE</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
+                        <property name="name">TOTALREVENUE</property>
+                        <property name="dataType">float</property>
+                    </structure>
+                    <structure>
+                        <property name="position">3</property>
+                        <property name="name">REVENUEYEAR</property>
+                        <property name="dataType">integer</property>
+                    </structure>
+                </list-property>
+            </structure>
+            <property name="dataSource">Classic Models Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">PRODUCTLINE</property>
+                    <property name="nativeName">PRODUCTLINE</property>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">TOTALREVENUE</property>
+                    <property name="nativeName">TOTALREVENUE</property>
+                    <property name="dataType">float</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">REVENUEYEAR</property>
+                    <property name="nativeName">REVENUEYEAR</property>
+                    <property name="dataType">integer</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[SELECT PRODUCTLINE,
+        SUM( PRICEEACH*QUANTITYORDERED ) AS "TOTALREVENUE",
+        YEAR( CLASSICMODELS.ORDERS.ORDERDATE) AS "REVENUEYEAR"
+FROM   CLASSICMODELS.ORDERDETAILS, CLASSICMODELS.PRODUCTS, CLASSICMODELS.ORDERS
+WHERE  CLASSICMODELS.ORDERDETAILS.PRODUCTCODE = 
+CLASSICMODELS.PRODUCTS.PRODUCTCODE
+and CLASSICMODELS.ORDERDETAILS.ORDERNUMBER = 
+CLASSICMODELS.ORDERS.ORDERNUMBER
+and YEAR(CLASSICMODELS.ORDERS.ORDERDATE) < 2013
+GROUP BY CLASSICMODELS.PRODUCTS.PRODUCTLINE, YEAR(CLASSICMODELS.ORDERS.ORDERDATE)
+]]></xml-property>
+            <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
+  <Version>2.0</Version>
+  <design:ResultSets derivedMetaData="true">
+    <design:resultSetDefinitions>
+      <design:resultSetColumns>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>PRODUCTLINE</design:name>
+              <design:position>1</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>50</design:precision>
+            <design:scale>0</design:scale>
+            <design:nullability>NotNullable</design:nullability>
+            <design:uiHints>
+              <design:displayName>PRODUCTLINE</design:displayName>
+            </design:uiHints>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>PRODUCTLINE</design:label>
+            <design:formattingHints>
+              <design:displaySize>50</design:displaySize>
+            </design:formattingHints>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>TOTALREVENUE</design:name>
+              <design:position>2</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>8</design:nativeDataTypeCode>
+            <design:precision>23</design:precision>
+            <design:scale>31</design:scale>
+            <design:nullability>Nullable</design:nullability>
+            <design:uiHints>
+              <design:displayName>TOTALREVENUE</design:displayName>
+            </design:uiHints>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>TOTALREVENUE</design:label>
+            <design:formattingHints>
+              <design:displaySize>23</design:displaySize>
+            </design:formattingHints>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>REVENUEYEAR</design:name>
+              <design:position>3</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>4</design:nativeDataTypeCode>
+            <design:precision>4</design:precision>
+            <design:scale>0</design:scale>
+            <design:nullability>Nullable</design:nullability>
+            <design:uiHints>
+              <design:displayName>REVENUEYEAR</design:displayName>
+            </design:uiHints>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>REVENUEYEAR</design:label>
+            <design:formattingHints>
+              <design:displaySize>4</design:displaySize>
+            </design:formattingHints>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+      </design:resultSetColumns>
+      <design:criteria/>
+    </design:resultSetDefinitions>
+  </design:ResultSets>
+</model:DesignValues>]]></xml-property>
+        </oda-data-set>
+    </data-sets>
+    <styles>
+        <style name="report" id="4">
+            <property name="fontFamily">sans-serif</property>
+            <property name="fontSize">10pt</property>
+        </style>
+        <style name="crosstab-cell" id="5">
+            <property name="borderBottomColor">#CCCCCC</property>
+            <property name="borderBottomStyle">solid</property>
+            <property name="borderBottomWidth">1pt</property>
+            <property name="borderLeftColor">#CCCCCC</property>
+            <property name="borderLeftStyle">solid</property>
+            <property name="borderLeftWidth">1pt</property>
+            <property name="borderRightColor">#CCCCCC</property>
+            <property name="borderRightStyle">solid</property>
+            <property name="borderRightWidth">1pt</property>
+            <property name="borderTopColor">#CCCCCC</property>
+            <property name="borderTopStyle">solid</property>
+            <property name="borderTopWidth">1pt</property>
+        </style>
+        <style name="crosstab" id="6">
+            <property name="borderBottomColor">#CCCCCC</property>
+            <property name="borderBottomStyle">solid</property>
+            <property name="borderBottomWidth">1pt</property>
+            <property name="borderLeftColor">#CCCCCC</property>
+            <property name="borderLeftStyle">solid</property>
+            <property name="borderLeftWidth">1pt</property>
+            <property name="borderRightColor">#CCCCCC</property>
+            <property name="borderRightStyle">solid</property>
+            <property name="borderRightWidth">1pt</property>
+            <property name="borderTopColor">#CCCCCC</property>
+            <property name="borderTopStyle">solid</property>
+            <property name="borderTopWidth">1pt</property>
+        </style>
+    </styles>
+    <page-setup>
+        <simple-master-page name="Simple MasterPage" id="2">
+            <page-footer>
+                <text id="3">
+                    <property name="contentType">html</property>
+                    <text-property name="content"><![CDATA[<value-of>new Date()</value-of>]]></text-property>
+                </text>
+            </page-footer>
+        </simple-master-page>
+    </page-setup>
+    <body>
+        <grid id="35">
+            <column id="36"/>
+            <row id="37">
+                <cell id="38">
+                    <extended-item extensionName="HTMLButton" name="Add Filters" id="94">
+                        <method name="clientScripts"><![CDATA[
+/**
+ * Occurs when mouse clicks.
+ * @param event
+ */
+
+this.onclick = function(event)
+{ 
+var btable = this.getViewer( ).getCurrentPageContent( ).getTableByBookmark("ProdLineRev");
+createFastFilters(); 
+btable.groupBy("PRODUCTLINE");
+btable.submit( );
+  var filter = new actuate.data.Filter(Filter("PRODUCTLINE", actuate.data.Filter.NOT_EQ, "NYC"));
+  var myVals = filter.getValues( );
+
+}
+]]></method>
+                        <expression name="text" type="constant">Add Filters</expression>
+                    </extended-item>
+                    <extended-item extensionName="HTMLButton" name="Display Button" id="103">
+                        <method name="clientScripts"><![CDATA[/**
+ * Occurs when mouse clicks.
+ * @param event
+ */
+this.onclick = function(event)
+{ 
+ var elem = document.getElementById("dd");
+ var strValue = elem.options[elem.selectedIndex].value;
+ filterColumn("PRODUCTLINE", strValue);
+}
+]]></method>
+                        <expression name="text" type="constant">Display Filters</expression>
+                    </extended-item>
+                </cell>
+            </row>
+            <row id="99">
+                <cell id="100"/>
+            </row>
+            <row id="39">
+                <cell id="40">
+                    <table name="ProdLineRev" id="71">
+                        <property name="dataSet">Prod Data Set</property>
+                        <property name="theme">ThemesReportItems3.Modern Table</property>
+                        <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">PRODUCTLINE</property>
+                                <text-property name="displayName">PRODUCTLINE</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["PRODUCTLINE"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">TOTALREVENUE</property>
+                                <text-property name="displayName">TOTALREVENUE</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["TOTALREVENUE"]</expression>
+                                <property name="dataType">float</property>
+                            </structure>
+                            <structure>
+                                <property name="name">REVENUEYEAR</property>
+                                <text-property name="displayName">REVENUEYEAR</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["REVENUEYEAR"]</expression>
+                                <property name="dataType">integer</property>
+                            </structure>
+                        </list-property>
+                        <expression name="bookmark" type="javascript">"ProdLineRev"</expression>
+                        <column id="90"/>
+                        <column id="91"/>
+                        <column id="92"/>
+                        <header>
+                            <row id="72">
+                                <cell id="73">
+                                    <label id="74">
+                                        <text-property name="text">PRODUCTLINE</text-property>
+                                    </label>
+                                </cell>
+                                <cell id="75">
+                                    <label id="76">
+                                        <text-property name="text">TOTALREVENUE</text-property>
+                                    </label>
+                                </cell>
+                                <cell id="77">
+                                    <label id="78">
+                                        <text-property name="text">REVENUEYEAR</text-property>
+                                    </label>
+                                </cell>
+                            </row>
+                            <row id="95">
+                                <cell id="96">
+                                    <text id="101">
+                                        <property name="contentType">html</property>
+                                        <text-property name="content"><![CDATA[<select id='PRODUCTLINE_FILTER' name='mySelect' onchange='javascript:filterColumn("PRODUCTLINE")' style="width:100px;">
+</select>
+
+]]></text-property>
+                                    </text>
+                                </cell>
+                                <cell id="97">
+                                    <text id="107">
+                                        <method name="onPrepare"><![CDATA[this.content = "Howdy!";]]></method>
+                                        <property name="contentType">auto</property>
+                                        <text-property name="content"><![CDATA[hello]]></text-property>
+                                    </text>
+                                </cell>
+                                <cell id="98">
+                                    <text id="111">
+                                        <property name="contentType">html</property>
+                                        <text-property name="content"><![CDATA[<select id='REVENUEYEAR_FILTER' name='revYr' style="width:100px;" onchange='javascript:filterColumn("REVENUEYEAR")' >
+</select>
+
+]]></text-property>
+                                    </text>
+                                </cell>
+                            </row>
+                        </header>
+                        <detail>
+                            <row id="79">
+                                <cell id="80">
+                                    <data id="81">
+                                        <property name="resultSetColumn">PRODUCTLINE</property>
+                                    </data>
+                                </cell>
+                                <cell id="82">
+                                    <data id="83">
+                                        <property name="resultSetColumn">TOTALREVENUE</property>
+                                    </data>
+                                </cell>
+                                <cell id="84">
+                                    <data id="85">
+                                        <property name="resultSetColumn">REVENUEYEAR</property>
+                                    </data>
+                                </cell>
+                            </row>
+                        </detail>
+                        <footer>
+                            <row id="86">
+                                <cell id="87"/>
+                                <cell id="88"/>
+                                <cell id="89"/>
+                            </row>
+                        </footer>
+                    </table>
+                </cell>
+            </row>
+            <row id="41">
+                <cell id="42">
+                    <text id="102">
+                        <property name="contentType">html</property>
+                        <text-property name="content"><![CDATA[
+<div id='fastFilter'/>
+<script>
+
+columnIndex = 0;
+var columns = new Array();
+
+function createFastFilters() {
+
+	columns[0] = "PRODUCTLINE";
+	columns[1] = "REVENUEYEAR";
+	debugger;
+	createFilter("PRODUCTLINE");
+setTimeout(function(){createFilter("REVENUEYEAR");},7000)
+
+  
+}
+
+function createFilter(columnName) {
+    debugger;	
+	var table = actuate.getViewer( "fastFilter" ).getTable();
+	var lcolumns = new Array;
+	lcolumns[0] = columnName;
+	
+	var request = new actuate.data.Request(table.getBookmark(), 0, 100);
+	request.setColumns(lcolumns);
+	actuate.getViewer( "fastFilter" ).downloadResultSet(request,addOptions);
+}
+
+function addOptions(resultSet) {
+    debugger;
+  	elem = document.getElementById(columns[columnIndex] + "_FILTER");
+	
+	var option=document.createElement("option");
+	option.text="<Clear Filter>";
+	try {
+    	// for IE earlier than version 8
+	   	elem.add(option,elem.options[null]);	
+	}
+	catch (e){
+		elem.add(option,null);
+	}	
+
+	var prev = "";
+	while (resultSet.next()) {
+	    if (prev != resultSet.getValue(1)) {
+			var option=document.createElement("option");
+			option.text=resultSet.getValue(1);
+			try {
+	    	// for IE earlier than version 8
+	  	    	elem.add(option,elem.options[null]);	
+			}
+			catch (e){
+				elem.add(option,null);
+			}	
+		}
+		prev = resultSet.getValue(1);
+	}
+
+	elem.selectedIndex = 1;
+	columnIndex++;
+}
+
+function filterColumn(columnName) {
+ 
+	ddId = columnName + "_FILTER";
+	var elem = document.getElementById(ddId);
+	var strValue = elem.options[elem.selectedIndex].value;
+	var table = actuate.getViewer( "fastFilter" ).getTable();
+	
+	if (strValue=="<Clear Filter>") {
+	  table.clearFilters(columnName);
+    } else {	
+		var filter = new actuate.data.Filter(columnName, actuate.data.Filter.EQ, strValue);
+		var myVal = filter.getValues();
+		table.setFilters(filter);
+		elem.selectedIndex = 1;
+	}
+	table.submit();
+
+}
+
+
+function submit(obj) {
+		var selIndex = obj.selectedIndex;
+}
+
+createFastFilters();
+
+</script>]]></text-property>
+                    </text>
+                </cell>
+            </row>
+            <row id="108">
+                <cell id="109"/>
+            </row>
+        </grid>
+    </body>
+</report>
