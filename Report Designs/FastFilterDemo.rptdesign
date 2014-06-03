@@ -381,18 +381,17 @@ this.onclick = function(event)
                 <cell id="42">
                     <text id="102">
                         <property name="contentType">html</property>
-                        <text-property name="content"><![CDATA[
-<div id='fastFilter'/>
+                        <text-property name="content"><![CDATA[<div id='fastFilter'/>
 <script>
 
 columnIndex = 0;
 var columns = new Array();
 
 function createFastFilters() {
+    debugger;
 
 	columns[0] = "PRODUCTLINE";
 	columns[1] = "REVENUEYEAR";
-	debugger;
 	createFilter("PRODUCTLINE");
 setTimeout(function(){createFilter("REVENUEYEAR");},7000)
 
@@ -400,11 +399,13 @@ setTimeout(function(){createFilter("REVENUEYEAR");},7000)
 }
 
 function createFilter(columnName) {
-    debugger;	
 	var table = actuate.getViewer( "fastFilter" ).getTable();
 	var lcolumns = new Array;
 	lcolumns[0] = columnName;
 	
+	if (sessionStorage[columnName + ".state"] == null) {
+		sessionStorage[columnName + ".state"] = "Not Filtered";
+	}
 	var request = new actuate.data.Request(table.getBookmark(), 0, 100);
 	request.setColumns(lcolumns);
 	actuate.getViewer( "fastFilter" ).downloadResultSet(request,addOptions);
@@ -413,16 +414,6 @@ function createFilter(columnName) {
 function addOptions(resultSet) {
     debugger;
   	elem = document.getElementById(columns[columnIndex] + "_FILTER");
-	
-	var option=document.createElement("option");
-	option.text="<Clear Filter>";
-	try {
-    	// for IE earlier than version 8
-	   	elem.add(option,elem.options[null]);	
-	}
-	catch (e){
-		elem.add(option,null);
-	}	
 
 	var prev = "";
 	while (resultSet.next()) {
@@ -439,9 +430,33 @@ function addOptions(resultSet) {
 		}
 		prev = resultSet.getValue(1);
 	}
+	
+  $("#" + columns[columnIndex] + "_FILTER").html($("#" + columns[columnIndex] + "_FILTER option").sort(function(x, y) {  
+         return $(x).text() < $(y).text() ? -1 : 1;  
+   })) 
+	
+	var option=document.createElement("option");
+	option.text="<Clear Filter>";
+	try {
+    	// for IE earlier than version 8
+	   	elem.add(option,elem.options[0]);	
+	}
+	catch (e){
+		elem.add(option,0);
+	}	
+	
+	option=document.createElement("option");
+	option.text = sessionStorage[columns[columnIndex] + ".state"];
 
-	elem.selectedIndex = 1;
-	columnIndex++;
+	try {
+    	// for IE earlier than version 8
+	   	elem.add(option,elem.options[0]);	
+	}
+	catch (e){
+		elem.add(option,0);
+	}	
+	
+ 	columnIndex++;
 }
 
 function filterColumn(columnName) {
@@ -451,18 +466,20 @@ function filterColumn(columnName) {
 	var strValue = elem.options[elem.selectedIndex].value;
 	var table = actuate.getViewer( "fastFilter" ).getTable();
 	
+	debugger;
 	if (strValue=="<Clear Filter>") {
 	  table.clearFilters(columnName);
+	  sessionStorage[columnName + ".state"] = "Not Filtered";
     } else {	
 		var filter = new actuate.data.Filter(columnName, actuate.data.Filter.EQ, strValue);
 		var myVal = filter.getValues();
 		table.setFilters(filter);
-		elem.selectedIndex = 1;
+	    sessionStorage[columnName + ".state"] = "Filtered";
+		elem.selectedIndex = 0;
 	}
 	table.submit();
 
 }
-
 
 function submit(obj) {
 		var selIndex = obj.selectedIndex;
