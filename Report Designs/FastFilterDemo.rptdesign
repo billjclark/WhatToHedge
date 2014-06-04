@@ -14,11 +14,120 @@ var mytable = reportContext.getDesignHandle().findElement("ProdRevLine");
             <property name="fileName">/ThemesReportItems3.rptlibrary</property>
             <property name="namespace">ThemesReportItems3</property>
         </structure>
-        <structure>
-            <property name="fileName">Report Designs/ResourceLoader.rptlibrary</property>
-            <property name="namespace">ResourceLoader</property>
-        </structure>
     </list-property>
+    <method name="onContentUpdate"><![CDATA[
+
+columnIndex = 0;
+var columns = new Array();
+
+this.createFastFilters = function () {
+    debugger;
+
+	columns[0] = "PRODUCTLINE";
+	columns[1] = "REVENUEYEAR";
+	this.createFilter("PRODUCTLINE");
+setTimeout(function(){createFilter("REVENUEYEAR");},7000)
+
+  
+}
+
+this.createFilter = function (columnName) {
+	var table = this.getViewer().getTable();
+	var lcolumns = new Array;
+	lcolumns[0] = columnName;
+	
+	if (sessionStorage[columnName + ".state"] == null) {
+		sessionStorage[columnName + ".state"] = "Not Filtered";
+	}
+	var request = new actuate.data.Request(table.getBookmark(), 0, 100);
+	request.setColumns(lcolumns);
+	this.getViewer().downloadResultSet(request,this.addOptions);
+}
+
+this.addOptions = function(resultSet) {
+    debugger;
+  	elem = document.getElementById(columns[columnIndex] + "_FILTER");
+
+    var i;
+    var found;
+	while (resultSet.next()) {
+		  found = false;
+	      for (i=0; i<elem.length; i++) {
+	        if (elem.options[i].text == resultSet.getValue(1)) {
+	           found = true;
+	           break;
+	          }
+	       }
+	       if (found) continue;
+			var option=document.createElement("option");
+			option.text=resultSet.getValue(1);
+			try {
+	    	// for IE earlier than version 8
+	  	    	elem.add(option,elem.options[null]);	
+			}
+			catch (e){
+				elem.add(option,null);
+			}	
+	}
+	
+  $("#" + columns[columnIndex] + "_FILTER").html($("#" + columns[columnIndex] + "_FILTER option").sort(function(x, y) {  
+         return $(x).text() < $(y).text() ? -1 : 1;  
+   })) 
+	
+	var option=document.createElement("option");
+	option.text="<Clear Filter>";
+	try {
+    	// for IE earlier than version 8
+	   	elem.add(option,elem.options[0]);	
+	}
+	catch (e){
+		elem.add(option,0);
+	}	
+	
+	option=document.createElement("option");
+	option.text = sessionStorage[columns[columnIndex] + ".state"];
+
+	try {
+    	// for IE earlier than version 8
+	   	elem.add(option,elem.options[0]);	
+	}
+	catch (e){
+		elem.add(option,0);
+	}	
+	
+	elem.selectedIndex = 0;
+	
+ 	columnIndex++;
+}
+
+window.myViewerId = this.id;
+window.filterColumn = function(columnName) {
+ 
+	ddId = columnName + "_FILTER";
+	var elem = document.getElementById(ddId);
+	var strValue = elem.options[elem.selectedIndex].value;
+	var table = actuate.getViewer(myViewerId).getTable();
+	
+	debugger;
+	if (strValue=="<Clear Filter>") {
+	  table.clearFilters(columnName);
+	  sessionStorage[columnName + ".state"] = "Not Filtered";
+    } else {	
+		var filter = new actuate.data.Filter(columnName, actuate.data.Filter.EQ, strValue);
+		var myVal = filter.getValues();
+		table.setFilters(filter);
+	    sessionStorage[columnName + ".state"] = "Filtered";
+		elem.selectedIndex = 0;
+	}
+	table.submit();
+
+}
+
+this.submit = function (obj) {
+		var selIndex = obj.selectedIndex;
+}
+
+this.createFastFilters();]]></method>
     <data-sources>
         <oda-data-source extensionID="org.eclipse.birt.report.data.oda.jdbc" name="Classic Models Data Source" id="112">
             <list-property name="privateDriverProperties">
@@ -297,6 +406,18 @@ this.onclick = function(event)
                                 <expression name="expression" type="javascript">dataSetRow["REVENUEYEAR"]</expression>
                                 <property name="dataType">integer</property>
                             </structure>
+                            <structure>
+                                <property name="name">TotalRevSum</property>
+                                <property name="dataType">float</property>
+                                <property name="aggregateFunction">SUM</property>
+                                <list-property name="arguments">
+                                    <structure>
+                                        <property name="name">Expression</property>
+                                        <expression name="value" type="javascript">row["TOTALREVENUE"]</expression>
+                                    </structure>
+                                </list-property>
+                                <property name="allowExport">true</property>
+                            </structure>
                         </list-property>
                         <expression name="bookmark" type="javascript">"ProdLineRev"</expression>
                         <column id="90"/>
@@ -357,11 +478,21 @@ this.onclick = function(event)
                                 </cell>
                                 <cell id="82">
                                     <data id="83">
+                                        <structure name="numberFormat">
+                                            <property name="category">Currency</property>
+                                            <property name="pattern">#,##0.00{RoundingMode=HALF_UP}</property>
+                                        </structure>
+                                        <property name="textAlign">right</property>
                                         <property name="resultSetColumn">TOTALREVENUE</property>
                                     </data>
                                 </cell>
                                 <cell id="84">
                                     <data id="85">
+                                        <structure name="numberFormat">
+                                            <property name="category">Currency</property>
+                                            <property name="pattern">#,##0.00{RoundingMode=HALF_UP}</property>
+                                        </structure>
+                                        <property name="textAlign">right</property>
                                         <property name="resultSetColumn">REVENUEYEAR</property>
                                     </data>
                                 </cell>
@@ -370,7 +501,16 @@ this.onclick = function(event)
                         <footer>
                             <row id="86">
                                 <cell id="87"/>
-                                <cell id="88"/>
+                                <cell id="88">
+                                    <data id="113">
+                                        <structure name="numberFormat">
+                                            <property name="category">Currency</property>
+                                            <property name="pattern">#,##0.00{RoundingMode=HALF_UP}</property>
+                                        </structure>
+                                        <property name="textAlign">right</property>
+                                        <property name="resultSetColumn">TotalRevSum</property>
+                                    </data>
+                                </cell>
                                 <cell id="89"/>
                             </row>
                         </footer>
@@ -378,118 +518,7 @@ this.onclick = function(event)
                 </cell>
             </row>
             <row id="41">
-                <cell id="42">
-                    <text id="102">
-                        <property name="contentType">html</property>
-                        <text-property name="content"><![CDATA[<div id='fastFilter'/>
-<script>
-
-columnIndex = 0;
-var columns = new Array();
-
-function createFastFilters() {
-    debugger;
-
-	columns[0] = "PRODUCTLINE";
-	columns[1] = "REVENUEYEAR";
-	createFilter("PRODUCTLINE");
-setTimeout(function(){createFilter("REVENUEYEAR");},7000)
-
-  
-}
-
-function createFilter(columnName) {
-	var table = actuate.getViewer( "fastFilter" ).getTable();
-	var lcolumns = new Array;
-	lcolumns[0] = columnName;
-	
-	if (sessionStorage[columnName + ".state"] == null) {
-		sessionStorage[columnName + ".state"] = "Not Filtered";
-	}
-	var request = new actuate.data.Request(table.getBookmark(), 0, 100);
-	request.setColumns(lcolumns);
-	actuate.getViewer( "fastFilter" ).downloadResultSet(request,addOptions);
-}
-
-function addOptions(resultSet) {
-    debugger;
-  	elem = document.getElementById(columns[columnIndex] + "_FILTER");
-
-	var prev = "";
-	while (resultSet.next()) {
-	    if (prev != resultSet.getValue(1)) {
-			var option=document.createElement("option");
-			option.text=resultSet.getValue(1);
-			try {
-	    	// for IE earlier than version 8
-	  	    	elem.add(option,elem.options[null]);	
-			}
-			catch (e){
-				elem.add(option,null);
-			}	
-		}
-		prev = resultSet.getValue(1);
-	}
-	
-  $("#" + columns[columnIndex] + "_FILTER").html($("#" + columns[columnIndex] + "_FILTER option").sort(function(x, y) {  
-         return $(x).text() < $(y).text() ? -1 : 1;  
-   })) 
-	
-	var option=document.createElement("option");
-	option.text="<Clear Filter>";
-	try {
-    	// for IE earlier than version 8
-	   	elem.add(option,elem.options[0]);	
-	}
-	catch (e){
-		elem.add(option,0);
-	}	
-	
-	option=document.createElement("option");
-	option.text = sessionStorage[columns[columnIndex] + ".state"];
-
-	try {
-    	// for IE earlier than version 8
-	   	elem.add(option,elem.options[0]);	
-	}
-	catch (e){
-		elem.add(option,0);
-	}	
-	
- 	columnIndex++;
-}
-
-function filterColumn(columnName) {
- 
-	ddId = columnName + "_FILTER";
-	var elem = document.getElementById(ddId);
-	var strValue = elem.options[elem.selectedIndex].value;
-	var table = actuate.getViewer( "fastFilter" ).getTable();
-	
-	debugger;
-	if (strValue=="<Clear Filter>") {
-	  table.clearFilters(columnName);
-	  sessionStorage[columnName + ".state"] = "Not Filtered";
-    } else {	
-		var filter = new actuate.data.Filter(columnName, actuate.data.Filter.EQ, strValue);
-		var myVal = filter.getValues();
-		table.setFilters(filter);
-	    sessionStorage[columnName + ".state"] = "Filtered";
-		elem.selectedIndex = 0;
-	}
-	table.submit();
-
-}
-
-function submit(obj) {
-		var selIndex = obj.selectedIndex;
-}
-
-createFastFilters();
-
-</script>]]></text-property>
-                    </text>
-                </cell>
+                <cell id="42"/>
             </row>
             <row id="108">
                 <cell id="109"/>
