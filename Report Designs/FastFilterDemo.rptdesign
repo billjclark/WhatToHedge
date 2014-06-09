@@ -15,89 +15,99 @@ var mytable = reportContext.getDesignHandle().findElement("ProdRevLine");
             <property name="namespace">ThemesReportItems3</property>
         </structure>
     </list-property>
-    <method name="onContentUpdate"><![CDATA[
+    <method name="onContentUpdate"><![CDATA[var columns = new Array();
 
-columnIndex = 0;
-var columns = new Array();
 
 this.createFastFilters = function () {
     debugger;
 
 	columns[0] = "PRODUCTLINE";
+//	columns[1] = "TOTALREVENUE";
 	columns[1] = "REVENUEYEAR";
-	this.createFilter("PRODUCTLINE");
-setTimeout(function(){createFilter("REVENUEYEAR");},7000)
-
-  
-}
-
-this.createFilter = function (columnName) {
-	var table = this.getViewer().getTable();
-	var lcolumns = new Array;
-	lcolumns[0] = columnName;
+	// Initialize the state of each column filter to not filtered.
+	for (var i = 0; i < columns.length; i++) {
 	
-	if (sessionStorage[columnName + ".state"] == null) {
-		sessionStorage[columnName + ".state"] = "Not Filtered";
+		if (sessionStorage[columns[i] + ".state"] == null) {
+			sessionStorage[columns[i] + ".state"] = "Not Filtered";
+		}
 	}
+	var table = this.getViewer().getTable();
 	var request = new actuate.data.Request(table.getBookmark(), 0, 100);
-	request.setColumns(lcolumns);
+	request.setColumns(columns);
 	this.getViewer().downloadResultSet(request,this.addOptions);
+
 }
 
 this.addOptions = function(resultSet) {
     debugger;
-  	elem = document.getElementById(columns[columnIndex] + "_FILTER");
+    
+    var columnIndex = 0;
+    
 
     var i;
     var found;
+    
 	while (resultSet.next()) {
-		  found = false;
-	      for (i=0; i<elem.length; i++) {
-	        if (elem.options[i].text == resultSet.getValue(1)) {
-	           found = true;
-	           break;
-	          }
-	       }
-	       if (found) continue;
+		for (columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+			found = false;
+  			elem = document.getElementById(columns[columnIndex] + "_FILTER");
+  		  	if (elem == null)	continue;                                           // Pass on column if not filterable
+  		  
+	      	for (i=0; i<elem.length; i++) {                                       // See if we already put it in the list
+	        	if (elem.options[i].text == resultSet.getValue(columnIndex+1)) {
+	           		found = true;
+	           		break;
+	          	}
+	       	}
+	       	if (found) continue;
+	       	
 			var option=document.createElement("option");
-			option.text=resultSet.getValue(1);
+			option.text=resultSet.getValue(columnIndex+1);
 			try {
 	    	// for IE earlier than version 8
 	  	    	elem.add(option,elem.options[null]);	
 			}
 			catch (e){
 				elem.add(option,null);
-			}	
+			}
+		}
+		 	
 	}
-	
-  $("#" + columns[columnIndex] + "_FILTER").html($("#" + columns[columnIndex] + "_FILTER option").sort(function(x, y) {  
-         return $(x).text() < $(y).text() ? -1 : 1;  
-   })) 
-	
-	var option=document.createElement("option");
-	option.text="<Clear Filter>";
-	try {
-    	// for IE earlier than version 8
-	   	elem.add(option,elem.options[0]);	
-	}
-	catch (e){
-		elem.add(option,0);
-	}	
-	
-	option=document.createElement("option");
-	option.text = sessionStorage[columns[columnIndex] + ".state"];
 
-	try {
-    	// for IE earlier than version 8
-	   	elem.add(option,elem.options[0]);	
+	
+	// Now sort all the column filters and add the top level options
+	for (columnIndex=0; columnIndex < columns.length; columnIndex++) {
+	  	elem = document.getElementById(columns[columnIndex] + "_FILTER");
+  	  	if (elem == null)	continue;                                           // Pass on column if not filterable
+	  	$("#" + columns[columnIndex] + "_FILTER").html($("#" + columns[columnIndex] + "_FILTER option").sort(function(x, y) {  
+         	return $(x).text() < $(y).text() ? -1 : 1;  
+ 	 	 })) 
+ 	 	 
+		var option=document.createElement("option");
+		option.text="<Clear Filter>";
+		try {
+	    	// for IE earlier than version 8
+		   	elem.add(option,elem.options[0]);	
+		}
+		catch (e){
+			elem.add(option,0);
+		}	
+	
+		option=document.createElement("option");
+		option.text = sessionStorage[columns[columnIndex] + ".state"];
+	
+		try {
+	    	// for IE earlier than version 8
+		   	elem.add(option,elem.options[0]);	
+		}
+		catch (e){
+			elem.add(option,0);
+		}	
+		
+		elem.selectedIndex = 0;
+		
 	}
-	catch (e){
-		elem.add(option,0);
-	}	
 	
-	elem.selectedIndex = 0;
-	
- 	columnIndex++;
 }
 
 window.myViewerId = this.id;
@@ -121,10 +131,6 @@ window.filterColumn = function(columnName) {
 	}
 	table.submit();
 
-}
-
-this.submit = function (obj) {
-		var selIndex = obj.selectedIndex;
 }
 
 this.createFastFilters();]]></method>
@@ -489,10 +495,10 @@ this.onclick = function(event)
                                 <cell id="84">
                                     <data id="85">
                                         <structure name="numberFormat">
-                                            <property name="category">Currency</property>
-                                            <property name="pattern">#,##0.00{RoundingMode=HALF_UP}</property>
+                                            <property name="category">Fixed</property>
+                                            <property name="pattern">###0{RoundingMode=HALF_UP}</property>
                                         </structure>
-                                        <property name="textAlign">right</property>
+                                        <property name="textAlign">center</property>
                                         <property name="resultSetColumn">REVENUEYEAR</property>
                                     </data>
                                 </cell>

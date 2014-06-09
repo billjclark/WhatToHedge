@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<script type="text/javascript" src="http://localhost:8700/iportal/jsapi"></script>
+		<script type="text/javascript" language="JavaScript">
+		var reqOps;
+		var reportfile;
+
+		function acload()
+		{
+			var iportalurl = "http://localhost:8700/iportal";
+			var userlogin = "administrator";
+			var userpassword = "";
+
+			actuate.load("viewer");
+			
+			reqOps = new actuate.RequestOptions();
+			reqOps.setRepositoryType(actuate.RequestOptions.REPOSITORY_ENCYCLOPEDIA);
+			reqOps.setIServerUrl("http://localhost:8000");
+			reqOps.setVolume("Default Volume");
+			actuate.initialize(iportalurl, reqOps, userlogin, userpassword, runDataService);
+		}
+	
+		function runDataService()
+		{
+			var dataservice = new actuate.DataService();			
+			var file = "/Customer Revenue Metrics.rptdocument";
+			var bookmark = "Revenue_by_Product_Line";
+			var start = "0";
+			var end = "9999";			
+			var request = new actuate.data.Request(bookmark, start, end);
+			
+			dataservice.setService("http://localhost:8700/iportal", reqOps);
+			dataservice.downloadResultSet(file, request, displayData);
+		}
+
+		function displayData(rs)
+		{
+			var columns = rs.getColumnNames();
+			var msg = "Result Set Data<br><table border=1>"; 
+			msg += "<tr><th>" + columns.join("<th>") + "</tr>";
+			while (rs.next())
+			{
+				msg += "<tr>";
+				for (var i = 0; i < columns.length; i++)
+				{
+					msg += "<td>" +  rs.getValue(columns[i]);  
+				}
+				msg += "</tr>";
+			}
+			msg += "</table>";
+			
+			var data = document.getElementById("data");
+			data.innerHTML = msg;
+		}
+		</script>
+	</head>
+	<body onload="acload()">
+		<div id="data"></div>
+
+	</body>
+</html>
