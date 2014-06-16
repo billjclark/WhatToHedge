@@ -22,8 +22,8 @@ this.createFastFilters = function () {
     debugger;
 
 	columns[0] = "PRODUCTLINE";
-//	columns[1] = "TOTALREVENUE";
-	columns[1] = "REVENUEYEAR";
+	columns[1] = "TOTALREVENUE";
+	columns[2] = "REVENUEYEAR";
 	// Initialize the state of each column filter to not filtered.
 	for (var i = 0; i < columns.length; i++) {
 	
@@ -33,6 +33,7 @@ this.createFastFilters = function () {
 	}
 	var table = this.getViewer().getTable();
 	var request = new actuate.data.Request(table.getBookmark(), 0, 100);
+	request.setMaxRows(0);
 	request.setColumns(columns);
 	this.getViewer().downloadResultSet(request,this.addOptions);
 
@@ -46,7 +47,7 @@ this.addOptions = function(resultSet) {
 
     var i;
     var found;
-    
+    // Load unique values into dropdowns
 	while (resultSet.next()) {
 		for (columnIndex = 0; columnIndex < columns.length; columnIndex++) {
 			found = false;
@@ -73,7 +74,8 @@ this.addOptions = function(resultSet) {
 		}
 		 	
 	}
-
+    // If the column has too many values or is a number, consolidate.
+    
 	
 	// Now sort all the column filters and add the top level options
 	for (columnIndex=0; columnIndex < columns.length; columnIndex++) {
@@ -82,7 +84,26 @@ this.addOptions = function(resultSet) {
 	  	$("#" + columns[columnIndex] + "_FILTER").html($("#" + columns[columnIndex] + "_FILTER option").sort(function(x, y) {  
          	return $(x).text() < $(y).text() ? -1 : 1;  
  	 	 })) 
- 	 	 
+     debugger;
+ 	 	
+ 	 	// If the list is a number, only select every tenth one
+ 	 	if (typeof elem.options[0].value == "number" || columnIndex == 2) {
+ 	 	 	   for (var i = 0; i < elem.options.length; i++) {
+  	 	   		if (i % 4 >= 0) elem.options.remove(i);
+  	 	   		
+ 	 	   	}
+			var option=document.createElement("option");
+			option.text="< Top 5 >";
+			try {
+		    	// for IE earlier than version 8
+			   	elem.add(option,elem.options[0]);	
+			}
+			catch (e){
+				elem.add(option,0);
+			}	
+ 	 	   	
+ 	 	
+ 	 	}
 		var option=document.createElement("option");
 		option.text="<Clear Filter>";
 		try {
@@ -122,6 +143,19 @@ window.filterColumn = function(columnName) {
 	if (strValue=="<Clear Filter>") {
 	  table.clearFilters(columnName);
 	  sessionStorage[columnName + ".state"] = "Not Filtered";
+    } else if (strValue=="< Top 5 >") {
+		var filter = new actuate.data.Filter(columnName, actuate.data.Filter.TOP_N, 5);
+		var myVal = filter.getValues();
+		table.setFilters(filter);
+	    sessionStorage[columnName + ".state"] = "Filtered";
+		elem.selectedIndex = 0;
+    } else if (columnName == "TOTALREVENUE") {
+		var filter = new actuate.data.Filter(columnName, actuate.data.Filter.GREATER_THAN, strValue);
+		var myVal = filter.getValues();
+		table.setFilters(filter);
+	    sessionStorage[columnName + ".state"] = "Filtered";
+		elem.selectedIndex = 0;
+    	
     } else {	
 		var filter = new actuate.data.Filter(columnName, actuate.data.Filter.EQ, strValue);
 		var myVal = filter.getValues();
@@ -358,13 +392,16 @@ GROUP BY CLASSICMODELS.PRODUCTS.PRODUCTLINE, YEAR(CLASSICMODELS.ORDERS.ORDERDATE
 
 this.onclick = function(event)
 { 
+
+alert('Not implementeed yert.');
+/*
 var btable = this.getViewer( ).getCurrentPageContent( ).getTableByBookmark("ProdLineRev");
 createFastFilters(); 
 btable.groupBy("PRODUCTLINE");
 btable.submit( );
   var filter = new actuate.data.Filter(Filter("PRODUCTLINE", actuate.data.Filter.NOT_EQ, "NYC"));
   var myVals = filter.getValues( );
-
+*/
 }
 ]]></method>
                         <expression name="text" type="constant">Add Filters</expression>
@@ -376,9 +413,12 @@ btable.submit( );
  */
 this.onclick = function(event)
 { 
+alert('Not implemented yet.');
+/*
  var elem = document.getElementById("dd");
  var strValue = elem.options[elem.selectedIndex].value;
  filterColumn("PRODUCTLINE", strValue);
+ */
 }
 ]]></method>
                         <expression name="text" type="constant">Display Filters</expression>
@@ -459,9 +499,9 @@ this.onclick = function(event)
                                 </cell>
                                 <cell id="97">
                                     <text id="107">
-                                        <method name="onPrepare"><![CDATA[this.content = "Howdy!";]]></method>
-                                        <property name="contentType">auto</property>
-                                        <text-property name="content"><![CDATA[hello]]></text-property>
+                                        <property name="contentType">html</property>
+                                        <text-property name="content"><![CDATA[<select id='TOTALREVENUE_FILTER' onchange='javascript:filterColumn("TOTALREVENUE")' style="width:100px;">
+</select>]]></text-property>
                                     </text>
                                 </cell>
                                 <cell id="98">
