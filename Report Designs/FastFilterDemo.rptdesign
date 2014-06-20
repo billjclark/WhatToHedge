@@ -45,6 +45,7 @@ this.addOptions = function(resultSet) {
     var columnIndex = 0;
     
 
+	var colValue;
     var i;
     var found;
     // Load unique values into dropdowns
@@ -53,9 +54,10 @@ this.addOptions = function(resultSet) {
 			found = false;
   			elem = document.getElementById(columns[columnIndex] + "_FILTER");
   		  	if (elem == null)	continue;                                           // Pass on column if not filterable
+  		    colValue = resultSet.getValue(columnIndex+1) != null ? resultSet.getValue(columnIndex+1) : "-- No Value --";
   		  
 	      	for (i=0; i<elem.length; i++) {                                       // See if we already put it in the list
-	        	if (elem.options[i].text == resultSet.getValue(columnIndex+1)) {
+	        	if (elem.options[i].text == colValue) {
 	           		found = true;
 	           		break;
 	          	}
@@ -63,7 +65,7 @@ this.addOptions = function(resultSet) {
 	       	if (found) continue;
 	       	
 			var option=document.createElement("option");
-			option.text=resultSet.getValue(columnIndex+1);
+			option.text=colValue;
 			try {
 	    	// for IE earlier than version 8
 	  	    	elem.add(option,elem.options[null]);	
