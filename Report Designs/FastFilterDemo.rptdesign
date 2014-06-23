@@ -169,6 +169,30 @@ window.filterColumn = function(columnName) {
 
 }
 
+window.searchTable = function() {
+    debugger;
+   	var elem = document.getElementById("searchString");
+   	var searchTerm = elem.value;
+   	if (searchTerm.length < 1) {
+   	  alert("Search term cannot be empty.");
+   	  return;
+   	}
+	var table = this.getViewer().getTable();
+	var request = new actuate.data.Request(table.getBookmark(), 0, 100);
+	request.setMaxRows(0);
+	request.setColumns(columns);
+	this.getViewer().downloadResultSet(request,this.searchColumns);
+    
+    
+	alert('Hello!! ' + searchTerm);
+}
+
+this.addOptions = function(resultSet) {
+    debugger;
+    
+    var columnIndex = 0;
+}
+
 this.createFastFilters();]]></method>
     <data-sources>
         <oda-data-source extensionID="org.eclipse.birt.report.data.oda.jdbc" name="Classic Models Data Source" id="112">
@@ -396,6 +420,7 @@ this.onclick = function(event)
 { 
 
 alert('Not implementeed yert.');
+javascript:searchTable("PRODUCTLINE")
 /*
 var btable = this.getViewer( ).getCurrentPageContent( ).getTableByBookmark("ProdLineRev");
 createFastFilters(); 
@@ -415,7 +440,7 @@ btable.submit( );
  */
 this.onclick = function(event)
 { 
-alert('Not implemented yet.');
+   alert('Not implemented yet.');
 /*
  var elem = document.getElementById("dd");
  var strValue = elem.options[elem.selectedIndex].value;
@@ -472,6 +497,17 @@ alert('Not implemented yet.');
                         <column id="91"/>
                         <column id="92"/>
                         <header>
+                            <row id="114">
+                                <cell id="115">
+                                    <property name="colSpan">3</property>
+                                    <property name="rowSpan">1</property>
+                                    <text id="118">
+                                        <property name="contentType">html</property>
+                                        <text-property name="content"><![CDATA[ Search all columns: <input type="text" id="searchString"><input type="submit" value="Search" onclick='javascript:searchTable()'><br>
+]]></text-property>
+                                    </text>
+                                </cell>
+                            </row>
                             <row id="72">
                                 <cell id="73">
                                     <label id="74">
