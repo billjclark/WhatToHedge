@@ -84,9 +84,9 @@ this.addOptions = function(resultSet) {
 	for (columnIndex=0; columnIndex < columns.length; columnIndex++) {
 	  	elem = document.getElementById(columns[columnIndex] + "_FILTER");
   	  	if (elem == null)	continue;                                           // Pass on column if not filterable
-//	  	$("#" + columns[columnIndex] + "_FILTER").html($("#" + columns[columnIndex] + "_FILTER option").sort(function(x, y) {  
-//         	return $(x).text() < $(y).text() ? -1 : 1;  
-// 	 	 })) 
+	  	$("#" + columns[columnIndex] + "_FILTER").html($("#" + columns[columnIndex] + "_FILTER option").sort(function(x, y) {  
+         	return $(x).text() < $(y).text() ? -1 : 1;  
+ 	 	 })) 
      debugger;
  	 	
  	 	// If the list is a number, only select every tenth one
@@ -173,10 +173,11 @@ window.filterColumn = function(columnName) {
 window.searchTable = function() {
     debugger;
 	var table = actuate.getViewer(myViewerId).getTable();
-	table.clearFilters("PRODUCTLINE");
    	var elem = document.getElementById("searchString");
    	var searchTerm = elem.value;
    	if (searchTerm.length < 1) {
+	  table.clearFilters("ROWID");
+	  table.submit();
    	  return;
    	}
 	var request = new actuate.data.Request(table.getBookmark(), 0, 100);
@@ -195,6 +196,7 @@ window.searchColumns = function(resultSet) {
     var columnIndex = 1;
     var i = 0, rowidIndex = 0;
     var rowIds = new Array();
+    
    	
    	var resultColumns = resultSet.getColumnNames();
 	for (columnIndex = 0; columnIndex < resultColumns.length; columnIndex++) {
@@ -221,7 +223,7 @@ window.searchColumns = function(resultSet) {
    debugger;
 	// Found at least one, so create filter
 	if (i > 0) {
-		var table = actuate.getViewer(myViewerId).getTable();
+	    var table = actuate.getViewer(myViewerId).getTable();
 		var filter = new actuate.data.Filter("ROWID", actuate.data.Filter.IN, rowIds);
 		table.setFilters(filter);
 		table.submit();
