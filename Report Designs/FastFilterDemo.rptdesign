@@ -21,9 +21,10 @@ var mytable = reportContext.getDesignHandle().findElement("ProdRevLine");
 this.createFastFilters = function () {
     debugger;
 
-	columns[0] = "PRODUCTLINE";
-	columns[1] = "TOTALREVENUE";
-	columns[2] = "REVENUEYEAR";
+	columns[0] = "ROWID";
+	columns[1] = "PRODUCTLINE";
+	columns[2] = "TOTALREVENUE";
+	columns[3] = "REVENUEYEAR";
 	// Initialize the state of each column filter to not filtered.
 	for (var i = 0; i < columns.length; i++) {
 	
@@ -83,9 +84,9 @@ this.addOptions = function(resultSet) {
 	for (columnIndex=0; columnIndex < columns.length; columnIndex++) {
 	  	elem = document.getElementById(columns[columnIndex] + "_FILTER");
   	  	if (elem == null)	continue;                                           // Pass on column if not filterable
-	  	$("#" + columns[columnIndex] + "_FILTER").html($("#" + columns[columnIndex] + "_FILTER option").sort(function(x, y) {  
-         	return $(x).text() < $(y).text() ? -1 : 1;  
- 	 	 })) 
+//	  	$("#" + columns[columnIndex] + "_FILTER").html($("#" + columns[columnIndex] + "_FILTER option").sort(function(x, y) {  
+//         	return $(x).text() < $(y).text() ? -1 : 1;  
+// 	 	 })) 
      debugger;
  	 	
  	 	// If the list is a number, only select every tenth one
@@ -171,26 +172,62 @@ window.filterColumn = function(columnName) {
 
 window.searchTable = function() {
     debugger;
+	var table = actuate.getViewer(myViewerId).getTable();
+	table.clearFilters("PRODUCTLINE");
    	var elem = document.getElementById("searchString");
    	var searchTerm = elem.value;
    	if (searchTerm.length < 1) {
-   	  alert("Search term cannot be empty.");
    	  return;
    	}
-	var table = this.getViewer().getTable();
 	var request = new actuate.data.Request(table.getBookmark(), 0, 100);
 	request.setMaxRows(0);
 	request.setColumns(columns);
-	this.getViewer().downloadResultSet(request,this.searchColumns);
+	actuate.getViewer(myViewerId).downloadResultSet(request,window.searchColumns);
     
     
 	alert('Hello!! ' + searchTerm);
 }
 
-this.addOptions = function(resultSet) {
-    debugger;
+window.searchColumns = function(resultSet) {
+    var elem = document.getElementById("searchString");
+   	var searchTerm = elem.value;
     
-    var columnIndex = 0;
+    var columnIndex = 1;
+    var i = 0, rowidIndex = 0;
+    var rowIds = new Array();
+   	
+   	var resultColumns = resultSet.getColumnNames();
+	for (columnIndex = 0; columnIndex < resultColumns.length; columnIndex++) {
+	   if (resultColumns[columnIndex] == "ROWID") {
+	   	  rowidIndex = columnIndex;
+	   	  break;
+	   	}	
+	}
+   	
+   	if (searchTerm.length < 1) {
+   	  return;
+   	}
+
+    while (resultSet.next()) {
+		for (columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+			if (resultSet.getValue(columnIndex+1).indexOf(searchTerm) != -1) {
+				//alert("Found in: " + resultSet.getValue(columnIndex+1));
+				rowIds[i] = resultSet.getValue(rowidIndex+1);
+				i++;
+				continue;
+			}
+		}
+	}
+   debugger;
+	// Found at least one, so create filter
+	if (i > 0) {
+		var table = actuate.getViewer(myViewerId).getTable();
+		var filter = new actuate.data.Filter("ROWID", actuate.data.Filter.IN, rowIds);
+		table.setFilters(filter);
+		table.submit();
+		
+	}
+    
 }
 
 this.createFastFilters();]]></method>
@@ -212,8 +249,14 @@ this.createFastFilters();]]></method>
         </oda-data-source>
     </data-sources>
     <data-sets>
-        <oda-data-set extensionID="org.eclipse.birt.report.data.oda.jdbc.JdbcSelectDataSet" name="Prod Data Set" id="8">
+        <oda-data-set extensionID="org.eclipse.birt.report.data.oda.jdbc.JdbcSelectDataSet" name="Prod Data Set" id="141">
             <list-property name="columnHints">
+                <structure>
+                    <property name="columnName">ROWID</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="displayName">ROWID</text-property>
+                    <text-property name="heading">ROWID</text-property>
+                </structure>
                 <structure>
                     <property name="columnName">PRODUCTLINE</property>
                     <property name="analysis">dimension</property>
@@ -237,16 +280,21 @@ this.createFastFilters();]]></method>
                 <list-property name="resultSet">
                     <structure>
                         <property name="position">1</property>
+                        <property name="name">ROWID</property>
+                        <property name="dataType">integer</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
                         <property name="name">PRODUCTLINE</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
-                        <property name="position">2</property>
+                        <property name="position">3</property>
                         <property name="name">TOTALREVENUE</property>
                         <property name="dataType">float</property>
                     </structure>
                     <structure>
-                        <property name="position">3</property>
+                        <property name="position">4</property>
                         <property name="name">REVENUEYEAR</property>
                         <property name="dataType">integer</property>
                     </structure>
@@ -256,24 +304,34 @@ this.createFastFilters();]]></method>
             <list-property name="resultSet">
                 <structure>
                     <property name="position">1</property>
-                    <property name="name">PRODUCTLINE</property>
-                    <property name="nativeName">PRODUCTLINE</property>
-                    <property name="dataType">string</property>
+                    <property name="name">ROWID</property>
+                    <property name="nativeName">ROWID</property>
+                    <property name="dataType">integer</property>
+                    <property name="nativeDataType">-5</property>
                 </structure>
                 <structure>
                     <property name="position">2</property>
-                    <property name="name">TOTALREVENUE</property>
-                    <property name="nativeName">TOTALREVENUE</property>
-                    <property name="dataType">float</property>
+                    <property name="name">PRODUCTLINE</property>
+                    <property name="nativeName">PRODUCTLINE</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
                     <property name="position">3</property>
+                    <property name="name">TOTALREVENUE</property>
+                    <property name="nativeName">TOTALREVENUE</property>
+                    <property name="dataType">float</property>
+                    <property name="nativeDataType">8</property>
+                </structure>
+                <structure>
+                    <property name="position">4</property>
                     <property name="name">REVENUEYEAR</property>
                     <property name="nativeName">REVENUEYEAR</property>
                     <property name="dataType">integer</property>
+                    <property name="nativeDataType">4</property>
                 </structure>
             </list-property>
-            <xml-property name="queryText"><![CDATA[SELECT PRODUCTLINE,
+            <xml-property name="queryText"><![CDATA[SELECT  ROW_NUMBER() OVER () AS ROWID, PRODUCTLINE,
         SUM( PRICEEACH*QUANTITYORDERED ) AS "TOTALREVENUE",
         YEAR( CLASSICMODELS.ORDERS.ORDERDATE) AS "REVENUEYEAR"
 FROM   CLASSICMODELS.ORDERDETAILS, CLASSICMODELS.PRODUCTS, CLASSICMODELS.ORDERS
@@ -281,7 +339,7 @@ WHERE  CLASSICMODELS.ORDERDETAILS.PRODUCTCODE =
 CLASSICMODELS.PRODUCTS.PRODUCTCODE
 and CLASSICMODELS.ORDERDETAILS.ORDERNUMBER = 
 CLASSICMODELS.ORDERS.ORDERNUMBER
-and YEAR(CLASSICMODELS.ORDERS.ORDERDATE) < 2013
+and YEAR(CLASSICMODELS.ORDERS.ORDERDATE) < 2015
 GROUP BY CLASSICMODELS.PRODUCTS.PRODUCTLINE, YEAR(CLASSICMODELS.ORDERS.ORDERDATE)
 ]]></xml-property>
             <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
@@ -293,13 +351,34 @@ GROUP BY CLASSICMODELS.PRODUCTS.PRODUCTLINE, YEAR(CLASSICMODELS.ORDERS.ORDERDATE
         <design:resultColumnDefinitions>
           <design:attributes>
             <design:identifier>
-              <design:name>PRODUCTLINE</design:name>
+              <design:name>ROWID</design:name>
               <design:position>1</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>-5</design:nativeDataTypeCode>
+            <design:precision>19</design:precision>
+            <design:scale>0</design:scale>
+            <design:nullability>NotNullable</design:nullability>
+            <design:uiHints>
+              <design:displayName>ROWID</design:displayName>
+            </design:uiHints>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>ROWID</design:label>
+            <design:formattingHints>
+              <design:displaySize>20</design:displaySize>
+            </design:formattingHints>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>PRODUCTLINE</design:name>
+              <design:position>2</design:position>
             </design:identifier>
             <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
             <design:precision>50</design:precision>
             <design:scale>0</design:scale>
-            <design:nullability>NotNullable</design:nullability>
+            <design:nullability>Nullable</design:nullability>
             <design:uiHints>
               <design:displayName>PRODUCTLINE</design:displayName>
             </design:uiHints>
@@ -315,11 +394,11 @@ GROUP BY CLASSICMODELS.PRODUCTS.PRODUCTLINE, YEAR(CLASSICMODELS.ORDERS.ORDERDATE
           <design:attributes>
             <design:identifier>
               <design:name>TOTALREVENUE</design:name>
-              <design:position>2</design:position>
+              <design:position>3</design:position>
             </design:identifier>
             <design:nativeDataTypeCode>8</design:nativeDataTypeCode>
-            <design:precision>23</design:precision>
-            <design:scale>31</design:scale>
+            <design:precision>15</design:precision>
+            <design:scale>0</design:scale>
             <design:nullability>Nullable</design:nullability>
             <design:uiHints>
               <design:displayName>TOTALREVENUE</design:displayName>
@@ -328,7 +407,7 @@ GROUP BY CLASSICMODELS.PRODUCTS.PRODUCTLINE, YEAR(CLASSICMODELS.ORDERS.ORDERDATE
           <design:usageHints>
             <design:label>TOTALREVENUE</design:label>
             <design:formattingHints>
-              <design:displaySize>23</design:displaySize>
+              <design:displaySize>22</design:displaySize>
             </design:formattingHints>
           </design:usageHints>
         </design:resultColumnDefinitions>
@@ -336,10 +415,10 @@ GROUP BY CLASSICMODELS.PRODUCTS.PRODUCTLINE, YEAR(CLASSICMODELS.ORDERS.ORDERDATE
           <design:attributes>
             <design:identifier>
               <design:name>REVENUEYEAR</design:name>
-              <design:position>3</design:position>
+              <design:position>4</design:position>
             </design:identifier>
             <design:nativeDataTypeCode>4</design:nativeDataTypeCode>
-            <design:precision>4</design:precision>
+            <design:precision>10</design:precision>
             <design:scale>0</design:scale>
             <design:nullability>Nullable</design:nullability>
             <design:uiHints>
@@ -349,7 +428,7 @@ GROUP BY CLASSICMODELS.PRODUCTS.PRODUCTLINE, YEAR(CLASSICMODELS.ORDERS.ORDERDATE
           <design:usageHints>
             <design:label>REVENUEYEAR</design:label>
             <design:formattingHints>
-              <design:displaySize>4</design:displaySize>
+              <design:displaySize>11</design:displaySize>
             </design:formattingHints>
           </design:usageHints>
         </design:resultColumnDefinitions>
@@ -453,14 +532,17 @@ this.onclick = function(event)
                 </cell>
             </row>
             <row id="99">
-                <cell id="100"/>
-            </row>
-            <row id="39">
-                <cell id="40">
-                    <table name="ProdLineRev" id="71">
+                <cell id="100">
+                    <table id="186">
                         <property name="dataSet">Prod Data Set</property>
                         <property name="theme">ThemesReportItems3.Modern Table</property>
                         <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">ROWID</property>
+                                <text-property name="displayName">ROWID</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["ROWID"]</expression>
+                                <property name="dataType">integer</property>
+                            </structure>
                             <structure>
                                 <property name="name">PRODUCTLINE</property>
                                 <text-property name="displayName">PRODUCTLINE</text-property>
@@ -479,54 +561,50 @@ this.onclick = function(event)
                                 <expression name="expression" type="javascript">dataSetRow["REVENUEYEAR"]</expression>
                                 <property name="dataType">integer</property>
                             </structure>
-                            <structure>
-                                <property name="name">TotalRevSum</property>
-                                <property name="dataType">float</property>
-                                <property name="aggregateFunction">SUM</property>
-                                <list-property name="arguments">
-                                    <structure>
-                                        <property name="name">Expression</property>
-                                        <expression name="value" type="javascript">row["TOTALREVENUE"]</expression>
-                                    </structure>
-                                </list-property>
-                                <property name="allowExport">true</property>
-                            </structure>
                         </list-property>
-                        <expression name="bookmark" type="javascript">"ProdLineRev"</expression>
-                        <column id="90"/>
-                        <column id="91"/>
-                        <column id="92"/>
+                        <expression name="bookmark" type="bre">"ProdLineRev"</expression>
+                        <column id="202"/>
+                        <column id="203"/>
+                        <column id="204"/>
+                        <column id="205"/>
                         <header>
-                            <row id="114">
-                                <cell id="115">
-                                    <property name="colSpan">3</property>
-                                    <property name="rowSpan">1</property>
+                            <row id="219">
+                                <cell id="220"/>
+                                <cell id="221"/>
+                                <cell id="222">
                                     <text id="118">
                                         <property name="contentType">html</property>
                                         <text-property name="content"><![CDATA[ Search all columns: <input type="text" id="searchString"><input type="submit" value="Search" onclick='javascript:searchTable()'><br>
 ]]></text-property>
                                     </text>
                                 </cell>
+                                <cell id="223"/>
                             </row>
-                            <row id="72">
-                                <cell id="73">
-                                    <label id="74">
+                            <row id="187">
+                                <cell id="188">
+                                    <label id="206">
+                                        <text-property name="text">ROWID</text-property>
+                                    </label>
+                                </cell>
+                                <cell id="189">
+                                    <label id="208">
                                         <text-property name="text">PRODUCTLINE</text-property>
                                     </label>
                                 </cell>
-                                <cell id="75">
-                                    <label id="76">
+                                <cell id="190">
+                                    <label id="210">
                                         <text-property name="text">TOTALREVENUE</text-property>
                                     </label>
                                 </cell>
-                                <cell id="77">
-                                    <label id="78">
+                                <cell id="191">
+                                    <label id="212">
                                         <text-property name="text">REVENUEYEAR</text-property>
                                     </label>
                                 </cell>
                             </row>
-                            <row id="95">
-                                <cell id="96">
+                            <row id="214">
+                                <cell id="215"/>
+                                <cell id="216">
                                     <text id="101">
                                         <property name="contentType">html</property>
                                         <text-property name="content"><![CDATA[<select id='PRODUCTLINE_FILTER' name='mySelect' onchange='javascript:filterColumn("PRODUCTLINE")' style="width:100px;">
@@ -535,14 +613,14 @@ this.onclick = function(event)
 ]]></text-property>
                                     </text>
                                 </cell>
-                                <cell id="97">
+                                <cell id="217">
                                     <text id="107">
                                         <property name="contentType">html</property>
                                         <text-property name="content"><![CDATA[<select id='TOTALREVENUE_FILTER' onchange='javascript:filterColumn("TOTALREVENUE")' style="width:100px;">
 </select>]]></text-property>
                                     </text>
                                 </cell>
-                                <cell id="98">
+                                <cell id="218">
                                     <text id="111">
                                         <property name="contentType">html</property>
                                         <text-property name="content"><![CDATA[<select id='REVENUEYEAR_FILTER' name='revYr' style="width:100px;" onchange='javascript:filterColumn("REVENUEYEAR")' >
@@ -554,24 +632,29 @@ this.onclick = function(event)
                             </row>
                         </header>
                         <detail>
-                            <row id="79">
-                                <cell id="80">
-                                    <data id="81">
+                            <row id="192">
+                                <cell id="193">
+                                    <data id="207">
+                                        <property name="resultSetColumn">ROWID</property>
+                                    </data>
+                                </cell>
+                                <cell id="194">
+                                    <data id="209">
                                         <property name="resultSetColumn">PRODUCTLINE</property>
                                     </data>
                                 </cell>
-                                <cell id="82">
-                                    <data id="83">
+                                <cell id="195">
+                                    <data id="211">
                                         <structure name="numberFormat">
-                                            <property name="category">Currency</property>
-                                            <property name="pattern">#,##0.00{RoundingMode=HALF_UP}</property>
+                                            <property name="category">General Number</property>
+                                            <property name="pattern">General Number</property>
                                         </structure>
                                         <property name="textAlign">right</property>
                                         <property name="resultSetColumn">TOTALREVENUE</property>
                                     </data>
                                 </cell>
-                                <cell id="84">
-                                    <data id="85">
+                                <cell id="196">
+                                    <data id="213">
                                         <structure name="numberFormat">
                                             <property name="category">Fixed</property>
                                             <property name="pattern">###0{RoundingMode=HALF_UP}</property>
@@ -583,26 +666,18 @@ this.onclick = function(event)
                             </row>
                         </detail>
                         <footer>
-                            <row id="86">
-                                <cell id="87"/>
-                                <cell id="88">
-                                    <data id="113">
-                                        <structure name="numberFormat">
-                                            <property name="category">Currency</property>
-                                            <property name="pattern">#,##0.00{RoundingMode=HALF_UP}</property>
-                                        </structure>
-                                        <property name="textAlign">right</property>
-                                        <property name="resultSetColumn">TotalRevSum</property>
-                                    </data>
-                                </cell>
-                                <cell id="89"/>
+                            <row id="197">
+                                <cell id="198"/>
+                                <cell id="199"/>
+                                <cell id="200"/>
+                                <cell id="201"/>
                             </row>
                         </footer>
                     </table>
                 </cell>
             </row>
-            <row id="41">
-                <cell id="42"/>
+            <row id="39">
+                <cell id="40"/>
             </row>
             <row id="108">
                 <cell id="109"/>
